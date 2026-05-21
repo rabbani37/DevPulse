@@ -6,7 +6,8 @@ const config = {
     port: env.PORT,
     databaseUrl: env.DATABASE_URL,
     access_secret:env.ACCESS_SECRET,
-    refresh_secret:env.REFRESH_SECRET
+    refresh_secret:env.REFRESH_SECRET,
+    project_type:env.PROJECT_TYPE
 }
 
 
