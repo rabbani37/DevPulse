@@ -1,3 +1,4 @@
+
 import { pool } from "../../db/db_index";
 import type { TRUser } from "../../types/types";
 import bcrypt from "bcrypt"
@@ -12,7 +13,7 @@ class AuthService {
             const rslt = await pool.query(`
             INSERT INTO users(name, email, password_hash, role) VALUES($1, $2, $3, $4)
 
-            RETURNING * 
+            RETURNING id, name, email, role, created_at, updated_at 
             `, [name, email, hash, role ?? "contributor"])
             return rslt;
         } catch (error) {
@@ -21,7 +22,17 @@ class AuthService {
     };
 
 
-    // userLogin
+    async userLoginAuth(email: string, password: string) {
+
+        const rslt = await pool.query(`
+            SELECT * FROM users WHERE email = $1
+            `, [email]);
+
+        const {password_hash, } = rslt?.rows[0]
+        console.log(password_hash);
+
+        // console.log({email,password});
+    }
 
 
 

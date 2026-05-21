@@ -7,6 +7,7 @@ const router = Router()
 
 
 router.post("/auth/signup",authController.createUser)
+router.post("/auth/login",authController.loginUser)
 
 
 
