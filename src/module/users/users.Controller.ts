@@ -9,6 +9,9 @@ const createUser = async (req: Request, res: Response) => {
     const rslt = await AuthService.userCreateAuth(req.body)
     const user = rslt?.rows[0];
 
+    if (!user) {
+        sendResponse(res, 404, { message: "User Not Found", })
+    }
     sendResponse(res, 201, { message: "User registered successfully", data: user })
 
     // res.status(201).json({ message: "create users " })
@@ -16,9 +19,10 @@ const createUser = async (req: Request, res: Response) => {
 
 const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    const rslt = await AuthService.userLoginAuth(email, password)
+    const finalUser = await AuthService.userLoginAuth(email, password)
 
-    // console.log("controller", rslt);
+    sendResponse(res, 201, { message: "Login successful", data: finalUser })
+
 }
 
 

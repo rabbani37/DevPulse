@@ -1,7 +1,11 @@
 
+import { sign } from "node:crypto";
 import { pool } from "../../db/db_index";
 import type { TRUser } from "../../types/types";
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
+import e from "express";
+import config from "../../config/index_config";
 
 
 class AuthService {
@@ -24,14 +28,29 @@ class AuthService {
 
     async userLoginAuth(email: string, password: string) {
 
-        const rslt = await pool.query(`
+        const userDB = await pool.query(`
             SELECT * FROM users WHERE email = $1
             `, [email]);
 
-        const {password_hash, } = rslt?.rows[0]
-        console.log(password_hash);
-
-        // console.log({email,password});
+        const user_db = userDB?.rows[0] // user
+        if (!user_db) {
+            throw new Error("Invalid email ")
+        }
+        const { password_hash, ...user } = user_db
+        console.log(user_db);
+        const isvalidPass = await bcrypt.compare(password, password_hash)
+        if (!isvalidPass) {
+            throw new Error("Invalid Credential ")
+        }
+        const jwtpayload = {
+            id: user_db.id,
+            name: user_db.name,
+            email: user_db.email,
+            role: user_db.role
+        }
+        const accessToken = jwt.sign(jwtpayload, config.access_secret as string, { expiresIn: "1d" })
+        const data = { accessToken, user };
+        return data
     }
 
 
