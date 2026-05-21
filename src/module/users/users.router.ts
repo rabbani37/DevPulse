@@ -1,0 +1,14 @@
+import { Router } from "express";
+import { authController } from "./users.Controller";
+
+
+
+const router = Router()
+
+
+router.post("/auth/signup",authController.createUser)
+
+
+
+
+export const authRouter = router

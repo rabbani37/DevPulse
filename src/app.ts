@@ -1,4 +1,5 @@
 import express, { type Application, type Request, type Response } from "express"
+import { authRouter } from "./module/users/users.router"
 
 
 
@@ -10,6 +11,10 @@ const app: Application = express()
 
 // middleware
 app.use(express.json())
+
+
+// routers middleware
+app.use("/api", authRouter)
 
 
 

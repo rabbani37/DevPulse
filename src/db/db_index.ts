@@ -19,12 +19,12 @@ export const initDB = async () => {
         email VARCHAR(40) UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         role VARCHAR(15) DEFAULT 'contributor' NOT NULL,
-        created_at TIMESTAmP NOT NULL,
-        updated_at TIMESTAMP NOT NULL
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         )`);
         console.log("Database connected...");
     } catch (error) {
-        console.log("Database connection error:", error);
+        console.log("Database connection", error);
     }
 
 }
