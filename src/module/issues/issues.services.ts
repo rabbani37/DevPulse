@@ -1,9 +1,9 @@
-import { error } from "node:console";
+
 import { pool } from "../../db/db_index";
 import type { Tissues } from "../../types/types";
 import tokenVerify from "../../utility/tokenVerify";
 import type { JwtPayload } from "jsonwebtoken";
-import { lchown } from "node:fs";
+
 
 
 
@@ -83,6 +83,23 @@ class IssuesService {
             updated_at: issues.updated_at
         }
         return result
+    }
+
+    async issuesUpdate(updateInfo: Tissues, id: string) {
+        const { title, description, type, } = updateInfo;
+        const updated_atNow = new Date().toISOString();
+        const issues_db = await pool.query(`
+            UPDATE issues 
+            SET title = $1, description = $2, type = $3, updated_at=$4
+            WHERE id = $5
+            `, [title, description, type, updated_atNow, id]);
+
+        if (!issues_db.rowCount) {
+            throw new Error("Issue not updated")
+        }
+        const reporter_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
+        const reporter = reporter_db.rows[0]
+        return reporter
     }
 
 }
