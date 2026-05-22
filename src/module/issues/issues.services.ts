@@ -13,6 +13,8 @@ class IssuesService {
         if (!title || !description || !type) {
             throw new Error("Title, description and type are required")
         }
+
+
         const { id } = currentUser
         const rslt = await pool.query(`
             INSERT INTO issues(title, description, type, status, reporter_id)
@@ -32,6 +34,7 @@ class IssuesService {
             throw new Error("Issues not found")
         }
         const reporterIds = issues.rows.map(i => i.reporter_id)
+        
         const users = await pool.query(`
             SELECT id, name, role FROM users WHERE id = ANY($1)
             `, [reporterIds])
@@ -82,22 +85,9 @@ class IssuesService {
     }
 
 
-    async issuesUpdate(updateInfo: Tissues, id: string, token: string | undefined) {
+    async issuesUpdate(updateInfo: Tissues, id: string,) {
         const { title, description, type, } = updateInfo;
         const updated_atNow = new Date().toISOString();
-
-        const validToken = tokenVerify(token, "access") as JwtPayload
-        const tokenId = validToken.id
-
-        const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
-        const issues = issues_db.rows[0]
-        if (!issues) {
-            throw new Error("Issues not found")
-        }
-        const { reporter_id } = issues
-        if (tokenId !== reporter_id) {
-            throw new Error("You are not authorized to update this Issues")
-        }
 
         const issuesUpdate_db = await pool.query(`
             UPDATE issues 
@@ -113,28 +103,12 @@ class IssuesService {
     }
 
 
-    async issuesDelete(id: string, token: string | undefined) {
-        const validToken = tokenVerify(token, "access") as JwtPayload
-        const tokenId = validToken.id
-
-        const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
-        const issues = issues_db.rows[0]
-        if (!issues) {
-            throw new Error("Issues not found")
-        }
-        const { reporter_id } = issues
-
-        if (tokenId !== reporter_id) {
-            throw new Error("You are not authorized to delete this Issues")
-        }
-
+    async issuesDelete(id: string) {
         const issueDelete = await pool.query(`
             DELETE FROM issues WHERE id = $1
             `, [id])
         return issueDelete
     }
-
-
 }
 
 

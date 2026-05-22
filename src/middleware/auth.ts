@@ -11,9 +11,9 @@ const auth = () => {
 
         const token = req.headers.authorization
         const validToken = tokenVerify(token, "access") as JwtPayload
-        const user = await pool.query(`SELECT id,name,email,role FROM users WHERE id = $1`, [validToken.id])
+        const user = await pool.query(`SELECT id,name,role FROM users WHERE id = $1`, [validToken.id])
         if (user.rows.length === 0) {
-            sendResponse(res, 404, { message: "user not found", error: true })
+           return sendResponse(res, 404, { message: "user not found", error: true })
         }
         req.currentUser = user.rows[0];
         next()

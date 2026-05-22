@@ -9,7 +9,7 @@ class AuthService {
 
     async userCreateAuth(user: TRUser,) {
         const { name, email, password_hash, role } = user;
-        const hash = await bcrypt.hash(password_hash, 15)
+        const hash = await bcrypt.hash(password_hash, 10)
 
         const rslt = await pool.query(`
             INSERT INTO users(name, email, password_hash, role) VALUES($1, $2, $3, $4)

@@ -25,16 +25,14 @@ const getSingleIssues = async (req: Request, res: Response) => {
 }
 
 const updateIssues = async (req: Request, res: Response) => {
-    const token = req.headers.authorization
     const id = req.params.id as string
-    const issues = await issuesServices.issuesUpdate(req.body, id, token)
+    const issues = await issuesServices.issuesUpdate(req.body, id)
     sendResponse(res, 200, { data: issues })
 }
 
 const deleteIssues = async (req: Request, res: Response) => {
-    const token = req.headers.authorization
     const id = req.params.id as string
-    const issues = await issuesServices.issuesDelete(id, token)
+    const issues = await issuesServices.issuesDelete(id)
     if (!issues.rowCount) {
         sendResponse(res, 404, { message: "Issue doesn't  deleted ", error: true })
     }
