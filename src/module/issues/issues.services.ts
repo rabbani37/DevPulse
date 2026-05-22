@@ -17,7 +17,7 @@ class IssuesService {
         const id = validToken.id
         const user = await pool.query(`SELECT * FROM users WHERE id = $1`, [id])
         if (user.rows.length === 0) {
-            throw new Error("Token now valid. So your not authencated user")
+            throw new Error("Token not valid. So your not authencated user")
         }
 
         const rslt = await pool.query(`
@@ -85,21 +85,38 @@ class IssuesService {
         return result
     }
 
-    async issuesUpdate(updateInfo: Tissues, id: string) {
+    async issuesUpdate(updateInfo: Tissues, id: string, token: string | undefined) {
         const { title, description, type, } = updateInfo;
         const updated_atNow = new Date().toISOString();
-        const issues_db = await pool.query(`
+
+        if (!token) {
+            throw new Error("Access denied. No token provided")
+        }
+        const validToken = tokenVerify(token, "access") as JwtPayload
+        const tokenId = validToken.id
+        const user_db = await pool.query(`SELECT * FROM users WHERE id = $1`, [tokenId])
+        const { id: id_db } = user_db.rows[0]
+        if (tokenId !== id_db) {
+            throw new Error("Unauthorized: User is not authenticated.")
+        }
+
+        const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
+        const { reporter_id } = issues_db.rows[0]
+        if (tokenId !== reporter_id) {
+            throw new Error("You are not authorized to update this Issues")
+        }
+
+        const issuesUpdate_db = await pool.query(`
             UPDATE issues 
             SET title = $1, description = $2, type = $3, updated_at=$4
             WHERE id = $5
             `, [title, description, type, updated_atNow, id]);
 
-        if (!issues_db.rowCount) {
-            throw new Error("Issue not updated")
+        if (!issuesUpdate_db.rowCount) {
+            throw new Error("Failed to update issue")
         }
-        const reporter_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
-        const reporter = reporter_db.rows[0]
-        return reporter
+        const result = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
+        return result.rows[0]
     }
 
 }

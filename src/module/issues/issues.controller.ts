@@ -22,8 +22,9 @@ const getSingleIssues = async (req: Request, res: Response) => {
 }
 
 const updateIssues = async (req: Request, res: Response) => {
+    const token = req.headers.authorization
     const id = req.params.id as string
-    const issues = await issuesServices.issuesUpdate(req.body, id)
+    const issues = await issuesServices.issuesUpdate(req.body, id,token)
     sendResponse(res, 200, { data: issues })
 }
 
