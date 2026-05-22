@@ -27,6 +27,40 @@ class IssuesService {
             `, [title, description, type, status ?? "open", id])
         return rslt.rows[0]
     }
+
+
+
+    async issuesAllGet() {
+        const issues = await pool.query(`
+        SELECT * FROM issues
+        `);
+        if(issues.rows.length === 0){
+            throw new Error("Issues not found")
+        }
+        const reporterIds = issues.rows.map(i => i.reporter_id)
+        const users = await pool.query(`
+            SELECT id, name, role FROM users WHERE id = ANY($1)
+            `, [reporterIds])
+        if(users.rows.length === 0){
+            throw new Error("User not found")
+        }
+        const result = issues.rows.map(issues => {
+            const reporter = users.rows.find(u => u.id === issues.reporter_id)
+            return {
+                id: issues.id,
+                title: issues.title,
+                description: issues.description,
+                type: issues.type,
+                status: issues.status,
+                reporter: reporter,
+                created_at: issues.created_at,
+                updated_at: issues.updated_at
+
+            }
+        })
+
+        return result;
+    }
 }
 
 

@@ -6,8 +6,13 @@ import { sendResponse } from "../../utility/sendResponse";
 
 const createIssuse = async (req: Request, res: Response) => {
     const token = req.headers.authorization
-    const issues = await issuesServices.issuesCreate(req.body,token)
+    const issues = await issuesServices.issuesCreate(req.body, token)
     sendResponse(res, 201, { message: "Issue created successfully", data: issues })
+}
+
+const getAllIssues = async (req: Request, res: Response) => {
+    const issues = await issuesServices.issuesAllGet()
+    sendResponse(res, 200, { data: issues })
 }
 
 
@@ -17,8 +22,7 @@ const createIssuse = async (req: Request, res: Response) => {
 
 
 
-
-
 export const issuesController = {
-    createIssuse
+    createIssuse,
+    getAllIssues
 }
