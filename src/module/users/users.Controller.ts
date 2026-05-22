@@ -1,12 +1,13 @@
 import type { Request, Response } from "express";
 import AuthService from "./users.services";
 import { sendResponse } from "../../utility/sendResponse";
+import { constants } from "node:buffer";
 
 
 
 const createUser = async (req: Request, res: Response) => {
 
-    const user = await AuthService.userCreateAuth(req.body);
+    const user = await AuthService.userCreateAuth(req.body,);
     return sendResponse(res, 201, { message: "User registered successfully", data: user })
 
 };
