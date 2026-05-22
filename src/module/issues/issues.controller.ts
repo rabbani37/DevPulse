@@ -15,6 +15,12 @@ const getAllIssues = async (req: Request, res: Response) => {
     sendResponse(res, 200, { data: issues })
 }
 
+const getSingleIssues = async (req: Request, res: Response) => {
+    const id = req.params.id as string
+    const issues = await issuesServices.issuesSingleGet(id)
+    sendResponse(res, 200, { data: issues })
+}
+
 
 
 
@@ -24,5 +30,6 @@ const getAllIssues = async (req: Request, res: Response) => {
 
 export const issuesController = {
     createIssuse,
-    getAllIssues
+    getAllIssues,
+    getSingleIssues
 }

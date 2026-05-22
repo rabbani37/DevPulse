@@ -7,7 +7,7 @@ const router = Router();
 
 router.post("/issues", issuesController.createIssuse)
 router.get("/issues", issuesController.getAllIssues)
-router.get("/issues/:id", () => { })
+router.get("/issues/:id", issuesController.getSingleIssues)
 router.put("/issues/:id", () => { })
 router.delete("/issues/:id", () => { })
 

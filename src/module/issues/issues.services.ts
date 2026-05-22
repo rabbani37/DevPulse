@@ -3,6 +3,7 @@ import { pool } from "../../db/db_index";
 import type { Tissues } from "../../types/types";
 import tokenVerify from "../../utility/tokenVerify";
 import type { JwtPayload } from "jsonwebtoken";
+import { lchown } from "node:fs";
 
 
 
@@ -28,20 +29,18 @@ class IssuesService {
         return rslt.rows[0]
     }
 
-
-
     async issuesAllGet() {
         const issues = await pool.query(`
         SELECT * FROM issues
         `);
-        if(issues.rows.length === 0){
+        if (issues.rows.length === 0) {
             throw new Error("Issues not found")
         }
         const reporterIds = issues.rows.map(i => i.reporter_id)
         const users = await pool.query(`
             SELECT id, name, role FROM users WHERE id = ANY($1)
             `, [reporterIds])
-        if(users.rows.length === 0){
+        if (users.rows.length === 0) {
             throw new Error("User not found")
         }
         const result = issues.rows.map(issues => {
@@ -61,11 +60,32 @@ class IssuesService {
 
         return result;
     }
+
+    async issuesSingleGet(id: string) {
+
+        const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [parseInt(id)]);
+        const issues = issues_db.rows[0]
+        if (!issues) {
+            throw new Error("Issues not found")
+        }
+        const { reporter_id } = issues
+        const reporter_db = await pool.query(`SELECT id, name, role FROM users WHERE id = $1`, [reporter_id])
+        const reporter = reporter_db.rows[0]
+
+        const result = {
+            id: issues.id,
+            title: issues.title,
+            description: issues.description,
+            type: issues.type,
+            status: issues.status,
+            reporter: reporter,
+            created_at: issues.created_at,
+            updated_at: issues.updated_at
+        }
+        return result
+    }
+
 }
-
-
-
-
 
 
 export default new IssuesService()
