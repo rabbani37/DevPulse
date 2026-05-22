@@ -41,10 +41,9 @@ class AuthService {
             name: user_db.name,
             role: user_db.role
         }
-        const { accessToken } = signToken(jwtpayload)
-
-        const data = { accessToken, user };
-        return data
+        const { accessToken,refreshToken } = signToken(jwtpayload)
+       
+        return { accessToken,refreshToken, user }
     }
 }
 

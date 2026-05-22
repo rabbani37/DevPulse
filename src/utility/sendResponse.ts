@@ -4,8 +4,8 @@ import type { Response } from "express";
 
 
 
-export function sendResponse<T>(res: Response, statusCod: number, { message, data, error: error, }: { message: unknown; data?: T; error?: boolean }): void { res.status(statusCod).json({
-        success: error ? false : true,
+export function sendResponse<T>(res: Response, statusCod: number, { message, data, error, }: { message: string; data?: T; error?: boolean }): void { res.status(statusCod).json({
+        success: error ? true : false,
         message: message, data: error ? undefined : data
     })
 
