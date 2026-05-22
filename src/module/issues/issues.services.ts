@@ -1,6 +1,6 @@
 
 import { pool } from "../../db/db_index";
-import type { Tissues } from "../../types/types";
+import type { TCurrentUser, Tissues } from "../../types/types";
 import tokenVerify from "../../utility/tokenVerify";
 import type { JwtPayload } from "jsonwebtoken";
 
@@ -8,18 +8,12 @@ import type { JwtPayload } from "jsonwebtoken";
 
 
 class IssuesService {
-    async issuesCreate(issuesInfo: Tissues, token: string | undefined) {
+    async issuesCreate(issuesInfo: Tissues, currentUser: TCurrentUser) {
         const { title, description, type, status, } = issuesInfo;
-        if (!token) {
-            throw new Error("not found token")
+        if (!title || !description || !type) {
+            throw new Error("Title, description and type are required")
         }
-        const validToken = tokenVerify(token, "access") as JwtPayload
-        const id = validToken.id
-        const user = await pool.query(`SELECT * FROM users WHERE id = $1`, [id])
-        if (user.rows.length === 0) {
-            throw new Error("Token not valid. So your not authencated user")
-        }
-
+        const { id } = currentUser
         const rslt = await pool.query(`
             INSERT INTO issues(title, description, type, status, reporter_id)
             VALUES($1, $2, $3, $4, $5)
@@ -28,6 +22,7 @@ class IssuesService {
             `, [title, description, type, status ?? "open", id])
         return rslt.rows[0]
     }
+
 
     async issuesAllGet() {
         const issues = await pool.query(`
@@ -61,6 +56,7 @@ class IssuesService {
         return result;
     }
 
+
     async issuesSingleGet(id: string) {
 
         const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [parseInt(id)]);
@@ -85,23 +81,20 @@ class IssuesService {
         return result
     }
 
+
     async issuesUpdate(updateInfo: Tissues, id: string, token: string | undefined) {
         const { title, description, type, } = updateInfo;
         const updated_atNow = new Date().toISOString();
 
-        if (!token) {
-            throw new Error("Access denied. No token provided")
-        }
         const validToken = tokenVerify(token, "access") as JwtPayload
         const tokenId = validToken.id
-        const user_db = await pool.query(`SELECT * FROM users WHERE id = $1`, [tokenId])
-        const { id: id_db } = user_db.rows[0]
-        if (tokenId !== id_db) {
-            throw new Error("Unauthorized: User is not authenticated.")
-        }
 
         const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
-        const { reporter_id } = issues_db.rows[0]
+        const issues = issues_db.rows[0]
+        if (!issues) {
+            throw new Error("Issues not found")
+        }
+        const { reporter_id } = issues
         if (tokenId !== reporter_id) {
             throw new Error("You are not authorized to update this Issues")
         }
@@ -118,6 +111,29 @@ class IssuesService {
         const result = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
         return result.rows[0]
     }
+
+
+    async issuesDelete(id: string, token: string | undefined) {
+        const validToken = tokenVerify(token, "access") as JwtPayload
+        const tokenId = validToken.id
+
+        const issues_db = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id])
+        const issues = issues_db.rows[0]
+        if (!issues) {
+            throw new Error("Issues not found")
+        }
+        const { reporter_id } = issues
+
+        if (tokenId !== reporter_id) {
+            throw new Error("You are not authorized to delete this Issues")
+        }
+
+        const issueDelete = await pool.query(`
+            DELETE FROM issues WHERE id = $1
+            `, [id])
+        return issueDelete
+    }
+
 
 }
 

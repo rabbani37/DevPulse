@@ -5,8 +5,11 @@ import { sendResponse } from "../../utility/sendResponse";
 
 
 const createIssuse = async (req: Request, res: Response) => {
-    const token = req.headers.authorization
-    const issues = await issuesServices.issuesCreate(req.body, token)
+    const currentUser = req.currentUser
+    if (!currentUser) {
+        sendResponse(res, 401, { message: "Unauthorized", error: true })
+    }
+    const issues = await issuesServices.issuesCreate(req.body, currentUser)
     sendResponse(res, 201, { message: "Issue created successfully", data: issues })
 }
 
@@ -24,14 +27,19 @@ const getSingleIssues = async (req: Request, res: Response) => {
 const updateIssues = async (req: Request, res: Response) => {
     const token = req.headers.authorization
     const id = req.params.id as string
-    const issues = await issuesServices.issuesUpdate(req.body, id,token)
+    const issues = await issuesServices.issuesUpdate(req.body, id, token)
     sendResponse(res, 200, { data: issues })
 }
 
-
-
-
-
+const deleteIssues = async (req: Request, res: Response) => {
+    const token = req.headers.authorization
+    const id = req.params.id as string
+    const issues = await issuesServices.issuesDelete(id, token)
+    if (!issues.rowCount) {
+        sendResponse(res, 404, { message: "Issue doesn't  deleted ", error: true })
+    }
+    sendResponse(res, 200, { message: "Issue deleted successfully" })
+}
 
 
 
@@ -39,5 +47,6 @@ export const issuesController = {
     createIssuse,
     getAllIssues,
     getSingleIssues,
-    updateIssues
+    updateIssues,
+    deleteIssues
 }
