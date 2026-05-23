@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc",
     "dev": "tsx watch ./src/server.ts"
   },
   "keywords": [],
