@@ -1,8 +1,6 @@
 
 import { pool } from "../../db/db_index";
 import type { TCurrentUser, Tissues } from "../../types/types";
-import tokenVerify from "../../utility/tokenVerify";
-import type { JwtPayload } from "jsonwebtoken";
 
 
 
@@ -26,15 +24,13 @@ class IssuesService {
     }
 
 
-    async issuesAllGet() {
-        const issues = await pool.query(`
-        SELECT * FROM issues
-        `);
+    async issuesAllGet(quary: string, value: any[]) {
+        const issues = await pool.query(quary, value);
         if (issues.rows.length === 0) {
             throw new Error("Issues not found")
         }
         const reporterIds = issues.rows.map(i => i.reporter_id)
-        
+
         const users = await pool.query(`
             SELECT id, name, role FROM users WHERE id = ANY($1)
             `, [reporterIds])
